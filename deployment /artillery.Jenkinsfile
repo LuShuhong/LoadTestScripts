@@ -10,48 +10,50 @@ def singleTest(n, app, target) {
     }
 }
 
-pipeline {
-    agent none
-
-    parameters {
-        string(
+parameters {
+    string(
             name: 'target',
             defaultValue: 'No Target Selected',
             description: 'Target to load test')
-        string(
+    string(
             name: 'app',
             defaultValue: 'No App Selected',
             description: 'App to load test')
-        string(
+    string(
             name: 'numCPUs',
             defaultValue: '1',
             description: 'Number of CPU to be used')
-        booleanParam(
+    booleanParam(
             name: 'isTriggered',
             defaultValue: false,
             description: 'Has build been triggered by another job'
-        )
-    }
+    )
+}
+
+pipeline {
+
+    agent none
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
     }
 
     stages {
-        stage('Select Config') {
-            steps {
-                node("master") {
+        stage('Select Config'){
+            steps{
+                node("master"){
                     deleteDir()
-                    script {
+                    script{
+
                         if (!params.isTriggered) {
                             config = input(
-                                ok: 'Deploy',
-                                abort: 'Abort',
-                                parameters: [
-                                    string(name: 'target', description: 'e.g. http://search.pl.io.thehut.local:8080'),
-                                    string(name: 'app', description: 'e.g. search'),
-                                    string(name: 'numCPUs', defaultValue: '1')
-                                ]
+                                    ok: 'Deploy',
+                                    abort: 'Abort',
+                                    parameters: [
+                                            string(name: 'target', description: 'e.g. http://search.pl.io.thehut.local:8080'),
+                                            string(name: 'app', description: 'e.g. search'),
+                                            string(name: 'numCPUs', defaultValue: '1')
+                                    ]
                             )
                             target = config["target"]
                             app = config["app"]
@@ -91,6 +93,7 @@ pipeline {
                             }
                             archiveArtifacts "*.json"
                             deleteDir()
+
                         }
                     }
                 }
@@ -101,7 +104,9 @@ pipeline {
                         }
                     }
                 }
+
             }
         }
     }
+
 }
